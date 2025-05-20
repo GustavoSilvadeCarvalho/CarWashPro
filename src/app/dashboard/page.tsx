@@ -725,7 +725,8 @@ export default function Dashboard() {
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() => handleDeleteProduct(product.id)}
+                                                onClick={() => product.id && handleDeleteProduct(product.id)}
+                                                disabled={!product.id}
                                             >
                                                 <Trash2 className="h-4 w-4 mr-1" />
                                                 Remover

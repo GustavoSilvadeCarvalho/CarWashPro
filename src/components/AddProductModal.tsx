@@ -35,7 +35,7 @@ interface AddProductModalProps {
 
 export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editingProduct }: AddProductModalProps) {
     // Use toast directly from import
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
     const [product, setProduct] = useState<Product>(
         editingProduct || {
             name: "",
@@ -89,7 +89,7 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
+        // setIsLoading(true);
 
         try {
             // 1. Validação básica
@@ -135,7 +135,7 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
                 { className: "bg-red-500 text-white" }
             );
         } finally {
-            setIsLoading(false);
+            // setIsLoading(false);
         }
     };
 
@@ -259,37 +259,6 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
                                     placeholder="Ex: Meguiar's"
                                 />
                             </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                {" "}
-                                <Label htmlFor="quantity" className="text-right">
-                                    {" "}
-                                    Quantidade{" "}
-                                </Label>{" "}
-                                <Input
-                                    id="quantity"
-                                    name="quantity"
-                                    type="number"
-                                    min="1"
-                                    value={product.quantity || 1}
-                                    onChange={handleNumberChange}
-                                    className="col-span-3"
-                                />{" "}
-                            </div>{" "}
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                {" "}
-                                <Label htmlFor="purchaseDate" className="text-right">
-                                    {" "}
-                                    Data de Compra{" "}
-                                </Label>{" "}
-                                <Input
-                                    id="purchaseDate"
-                                    name="purchaseDate"
-                                    type="date"
-                                    value={product.purchase_date || ""}
-                                    onChange={handleChange}
-                                    className="col-span-3"
-                                />{" "}
-                            </div>{" "}
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="image_url" className="text-right">
                                     URL da Imagem
