@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -21,11 +21,9 @@ interface Product {
     name: string;
     description: string;
     price: number;
-    category?: string;
     brand?: string;
-    quantity?: number;
-    purchase_date?: string;
-    image?: string;
+    image_url?: string;
+    category?: string;
 }
 
 interface AddProductModalProps {
@@ -43,12 +41,41 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
             name: "",
             description: "",
             price: 0,
+            brand: "",
+            image_url: "",
+            category: "",
+            // outros campos...
         }
     );
 
+    useEffect(() => {
+        if (editingProduct) {
+            setProduct({
+                name: editingProduct.name,
+                description: editingProduct.description,
+                price: editingProduct.price,
+                brand: editingProduct.brand || "",
+                image_url: editingProduct.image_url || "",
+                category: editingProduct.category || "",
+                // outros campos...
+            });
+        } else {
+            // Reset para novo produto
+            setProduct({
+                name: "",
+                description: "",
+                price: 0,
+                brand: "",
+                image_url: "",
+                category: "",
+                // outros campos...
+            });
+        }
+    }, [editingProduct]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setProduct((prev) => ({ ...prev, [name]: value }));
+        setProduct(prev => ({ ...prev, [name]: value }));
     };
 
     const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +102,9 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
                 name: product.name,
                 description: product.description,
                 price: Number(product.price),
+                brand: product.brand || null,
+                image_url: product.image_url || null,
+                category: product.category || null,
                 user_id: (await supabase.auth.getUser()).data.user?.id
             };
 
@@ -217,20 +247,18 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
                                 </div>{" "}
                             </div>{" "}
                             <div className="grid grid-cols-4 items-center gap-4">
-                                {" "}
                                 <Label htmlFor="brand" className="text-right">
-                                    {" "}
-                                    Marca{" "}
-                                </Label>{" "}
+                                    Marca
+                                </Label>
                                 <Input
                                     id="brand"
                                     name="brand"
-                                    value={product.brand || ""}
+                                    value={product.brand || ''}
                                     onChange={handleChange}
                                     className="col-span-3"
-                                    placeholder="Meguiar's"
-                                />{" "}
-                            </div>{" "}
+                                    placeholder="Ex: Meguiar's"
+                                />
+                            </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 {" "}
                                 <Label htmlFor="quantity" className="text-right">
@@ -263,20 +291,18 @@ export default function AddProductModal({ isOpen, onClose, onSaveSuccess, editin
                                 />{" "}
                             </div>{" "}
                             <div className="grid grid-cols-4 items-center gap-4">
-                                {" "}
-                                <Label htmlFor="image" className="text-right">
-                                    {" "}
-                                    Imagem URL{" "}
-                                </Label>{" "}
+                                <Label htmlFor="image_url" className="text-right">
+                                    URL da Imagem
+                                </Label>
                                 <Input
-                                    id="image"
-                                    name="image"
-                                    value={product.image || ""}
+                                    id="image_url"
+                                    name="image_url"
+                                    value={product.image_url || ''}
                                     onChange={handleChange}
                                     className="col-span-3"
-                                    placeholder="https://exemplo.com/imagem.jpg"
-                                />{" "}
-                            </div>{" "}
+                                    placeholder="https://exemplo.com/foto.jpg"
+                                />
+                            </div>
                         </div>{" "}
                         <DialogFooter>
                             {" "}

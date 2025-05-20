@@ -19,11 +19,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import Image from "next/image";
 
 interface Product {
-    id: string;
+    id?: string;
     name: string;
     description: string;
     price: number;
-    created_at: string;
+    brand?: string;
+    image?: string;
+    category?: string;
 }
 
 // Sample data for cars
@@ -698,6 +700,7 @@ export default function Dashboard() {
                                                 <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                                                     {product.description}
                                                 </p>
+                                                <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.brand && `Marca: ${product.brand}`}</p>
                                             </div>
                                             <span className="bg-[#9b87f5] text-white text-xs px-2 py-1 rounded-full">
                                                 {product.category || 'Sem categoria'}
@@ -708,11 +711,6 @@ export default function Dashboard() {
                                             <p className="text-green-600 font-medium">
                                                 R$ {product.price.toFixed(2)}
                                             </p>
-                                            {product.quantity && (
-                                                <p className="text-gray-500 text-sm">
-                                                    Qtd: {product.quantity}
-                                                </p>
-                                            )}
                                         </div>
 
                                         <div className="flex justify-end gap-2 mt-4">
