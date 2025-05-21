@@ -10,7 +10,6 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Car, Home, LogOut, Plus, ShoppingCart, Play, CheckCircle, ArrowRight, Trash2, Pencil, Loader2 } from "lucide-react";
 import CarCard from "@/components/CarCard";
-import ProductCard from "@/components/ProductCard";
 import AddCarModal from "@/components/AddCarModal";
 import AddProductModal from "@/components/AddProductModal";
 import { Toaster, toast } from "sonner";
@@ -28,29 +27,29 @@ interface Product {
     category?: string;
 }
 
-// Sample data for cars
-const sampleCars = [
-    {
-        id: "1",
-        name: "Meu Sedan",
-        model: "Honda Civic",
-        year: 2020,
-        color: "Azul",
-        licensePlate: "ABC-1234",
-        image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-        lastWashDate: "2023-09-15",
-    },
-    {
-        id: "2",
-        name: "SUV da Família",
-        model: "Toyota RAV4",
-        year: 2022,
-        color: "Prata",
-        licensePlate: "DEF-5678",
-        lastWashDate: null,
-    },
-];
+interface Car {
+    id: string;
+    name: string;
+    model: string;
+    year: number;
+    color: string;
+    licensePlate: string;
+    image?: string;
+    lastWashDate: string | null;
+    user_id: string;
+    created_at?: string;
+}
 
+interface DetailedWashCar {
+    id: string;
+    name: string;
+    model: string;
+    year: number;
+    color: string;
+    licensePlate: string;
+    image?: string;
+    lastWashDate: string | null;
+}
 
 // Enhanced detailed washing process with stages and steps
 const detailedWashProcess = {
@@ -151,13 +150,14 @@ const detailedWashProcess = {
 
 export default function Dashboard() {
     // Use toast from 'sonner' directly, and render <Toaster /> in JSX
-    const [cars, setCars] = useState(sampleCars);
+    const [cars, setCars] = useState<Car[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [isAddCarModalOpen, setIsAddCarModalOpen] = useState(false);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-    const [editingCar, setEditingCar] = useState<any>(null);
+    const [editingCar, setEditingCar] = useState<Car | null>(null);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentWashCar, setCurrentWashCar] = useState<DetailedWashCar | null>(null);
 
     // State for detailed wash process
     const [detailedWash, setDetailedWash] = useState(detailedWashProcess);
@@ -167,7 +167,6 @@ export default function Dashboard() {
     // New states for car selection
     const [isCarSelectModalOpen, setIsCarSelectModalOpen] = useState(false);
     const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
-    const [currentWashCar, setCurrentWashCar] = useState<any>(null);
 
     const fetchProducts = async () => {
         try {
@@ -193,11 +192,35 @@ export default function Dashboard() {
         }
     };
 
+    const fetchCars = async () => {
+        try {
+            setIsLoading(true);
+            const { data, error } = await supabase
+                .from('user_cars')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            setCars(data || []);
+        } catch (error) {
+            console.error('Erro ao carregar veículos:', error);
+            toast(
+                <div>
+                    <div className="font-bold text-red-600">Erro</div>
+                    <div>Não foi possível carregar os veículos.</div>
+                </div>
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
+        fetchCars();
         fetchProducts();
     }, []);
 
-    // Renamed to avoid redeclaration error
     const handleEditProduct = (product: Product) => {
         setEditingProduct(product);
         setIsAddProductModalOpen(true);
@@ -231,38 +254,9 @@ export default function Dashboard() {
         }
     };
 
-    const handleAddCar = (car: any) => {
-        if (editingCar) {
-            setCars(cars.map((c) => (c.id === editingCar.id ? { ...car, id: c.id } : c)));
-            toast(
-                <>
-                    <div className="font-bold">Veículo atualizado</div>
-                    <div>O veículo {car.name} foi atualizado com sucesso.</div>
-                </>
-            );
-        } else {
-            const newCar = {
-                ...car,
-                id: Date.now().toString(),
-            };
-            setCars([...cars, newCar]);
-            toast(
-                <>
-                    <div className="font-bold">Veículo adicionado</div>
-                    <div>O veículo {car.name} foi adicionado com sucesso.</div>
-                </>
-            );
-        }
-        setIsAddCarModalOpen(false);
-        setEditingCar(null);
-    };
-
-    const handleEditCar = (id: string) => {
-        const car = cars.find((c) => c.id === id);
-        if (car) {
-            setEditingCar(car);
-            setIsAddCarModalOpen(true);
-        }
+    const handleEditCar = (car: Car) => {
+        setEditingCar(car);
+        setIsAddCarModalOpen(true);
     };
 
     // Functions for car selection and detailed wash
@@ -386,6 +380,34 @@ export default function Dashboard() {
         const completedSteps = detailedWash.stages.reduce((acc, stage) =>
             acc + stage.steps.filter(step => step.completed).length, 0);
         return (completedSteps / totalSteps) * 100;
+    };
+
+    const handleDeleteCar = async (id: string) => {
+        try {
+            const { error } = await supabase
+                .from('user_cars')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            toast(
+                <>
+                    <div className="font-bold">Sucesso!</div>
+                    <div>Veículo removido com sucesso.</div>
+                </>
+            );
+
+            fetchCars();
+        } catch (error) {
+            console.error('Erro ao deletar veículo:', error);
+            toast(
+                <div>
+                    <div className="font-bold text-red-600">Erro</div>
+                    <div>Não foi possível remover o veículo.</div>
+                </div>
+            );
+        }
     };
 
     return (
@@ -613,7 +635,11 @@ export default function Dashboard() {
                             </Button>
                         </div>
 
-                        {cars.length === 0 ? (
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <Loader2 className="h-8 w-8 animate-spin text-[#9b87f5]" />
+                            </div>
+                        ) : cars.length === 0 ? (
                             <div className="bg-white rounded-lg shadow p-6 text-center">
                                 <Car className="h-16 w-16 mx-auto text-gray-400 mb-4" />
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -636,7 +662,12 @@ export default function Dashboard() {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {cars.map((car) => (
-                                    <CarCard key={car.id} car={car} onEdit={handleEditCar} />
+                                    <CarCard
+                                        key={car.id}
+                                        car={car}
+                                        onEdit={() => handleEditCar(car)}
+                                        onDelete={() => handleDeleteCar(car.id)}
+                                    />
                                 ))}
                             </div>
                         )}
@@ -797,8 +828,8 @@ export default function Dashboard() {
                     setIsAddCarModalOpen(false);
                     setEditingCar(null);
                 }}
-                onSave={handleAddCar}
-                editingCar={editingCar}
+                onSaveSuccess={fetchCars}
+                editingCar={editingCar || undefined}
             />
 
             <AddProductModal

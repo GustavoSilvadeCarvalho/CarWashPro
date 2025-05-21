@@ -13,15 +13,14 @@ import Footer from "@/components/Footer";
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [socialLoading, setSocialLoading] = useState(false);
     const [needsConfirmation, setNeedsConfirmation] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const router = useRouter();
-
     // Login com e-mail/senha
-    const handleLogin = async (e) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
@@ -46,7 +45,7 @@ export default function LoginPage() {
             setTimeout(() => router.push("/dashboard"), 1500);
 
         } catch (err) {
-            setError(err.message);
+            setError((err as Error).message);
         } finally {
             setLoading(false);
         }
@@ -73,7 +72,7 @@ export default function LoginPage() {
             if (error) throw error;
 
         } catch (err) {
-            setError('Erro ao entrar com Google: ' + err.message);
+            setError('Erro ao entrar com Google: ' + (err as Error).message);
             setSocialLoading(false);
         }
     };
@@ -97,7 +96,7 @@ export default function LoginPage() {
             setSuccessMessage('E-mail de confirmação reenviado! Verifique sua caixa de entrada.');
             setNeedsConfirmation(false);
         } catch (err) {
-            setError('Erro ao reenviar e-mail: ' + err.message);
+            setError('Erro ao reenviar e-mail: ' + (err as Error).message);
         } finally {
             setLoading(false);
         }
