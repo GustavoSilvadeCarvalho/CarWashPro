@@ -69,21 +69,30 @@ export default function Register() {
             }
 
             if (authData?.user?.id) {
-                // 2. Opcional: Inserir informações adicionais na tabela profiles
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .upsert({
+                console.log("Dados do usuário criado:", authData.user);
+
+                try {
+                    const newProfileData = {
                         id: authData.user.id,
                         email: formData.email,
                         first_name: formData.firstName,
                         last_name: formData.lastName,
                         full_name: `${formData.firstName} ${formData.lastName}`,
                         updated_at: new Date().toISOString()
-                    });
+                    };
 
-                if (profileError) {
-                    console.error("Erro ao criar perfil:", profileError);
-                    // Não lançamos erro aqui pois o usuário já foi criado no auth
+                    // Tentativa de criar o perfil (não crítica)
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .upsert(newProfileData);
+
+                    if (profileError) {
+                        // Apenas logamos o erro, mas não interrompemos o fluxo
+                        console.log("Nota: O perfil será criado após a confirmação do email:", profileError);
+                    }
+                } catch (profileErr) {
+                    // Apenas logamos o erro, mas não interrompemos o fluxo
+                    console.log("Nota: O perfil será criado após a confirmação do email:", profileErr);
                 }
             }
 
@@ -91,7 +100,16 @@ export default function Register() {
             router.push('/verify-email?email=' + encodeURIComponent(formData.email));
 
         } catch (err) {
-            setError((err as Error).message || "Erro ao criar conta");
+            console.error("Erro no processo de registro:", err);
+            if (err instanceof Error) {
+                if (err.message.includes('email not confirmed')) {
+                    setError('Por favor, confirme seu e-mail antes de fazer login.');
+                } else {
+                    setError(err.message);
+                }
+            } else {
+                setError("Erro ao criar conta. Por favor, tente novamente.");
+            }
         } finally {
             setLoading(false);
         }
