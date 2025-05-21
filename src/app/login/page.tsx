@@ -1,14 +1,13 @@
 'use client';
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -18,7 +17,7 @@ export default function LoginPage() {
     const [socialLoading, setSocialLoading] = useState(false);
     const [needsConfirmation, setNeedsConfirmation] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
-    const router = useRouter();
+
     // Login com e-mail/senha
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -28,10 +27,13 @@ export default function LoginPage() {
         setSuccessMessage("");
 
         try {
-            const { error: authError } = await supabase.auth.signInWithPassword({
+            console.log('Iniciando processo de login...');
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
+
+            console.log('Resposta do login:', { data, error: authError });
 
             if (authError) {
                 if (authError.message.includes('email not confirmed')) {
@@ -41,10 +43,23 @@ export default function LoginPage() {
                 throw authError;
             }
 
-            setSuccessMessage('Login realizado com sucesso! Redirecionando...');
-            setTimeout(() => router.push("/dashboard"), 1500);
+            if (data?.session) {
+                console.log('Sessão criada com sucesso:', data.session);
+
+                setSuccessMessage('Login realizado com sucesso! Redirecionando...');
+
+                // Pequeno delay para garantir que a sessão foi salva
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Forçar navegação para o dashboard
+                window.location.href = '/dashboard';
+            } else {
+                console.log('Login bem-sucedido mas sem sessão criada');
+                throw new Error('Erro ao criar sessão. Tente novamente.');
+            }
 
         } catch (err) {
+            console.error('Erro no processo de login:', err);
             setError((err as Error).message);
         } finally {
             setLoading(false);

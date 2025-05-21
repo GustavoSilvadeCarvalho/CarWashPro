@@ -1,15 +1,16 @@
 'use client';
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { supabase } from "@/lib/supabaseClient";
-import { useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 export default function Register() {
     const [formData, setFormData] = useState({
@@ -20,11 +21,11 @@ export default function Register() {
         confirmPassword: '',
         terms: false
     });
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleChange = (e) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { id, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -32,20 +33,19 @@ export default function Register() {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
         // Validações básicas
         if (formData.password !== formData.confirmPassword) {
-            setError("As senhas não coincidem");
+            setError(null);
             setLoading(false);
             return;
         }
-
         if (!formData.terms) {
-            setError("Você deve aceitar os termos de serviço");
+            setError(null);
             setLoading(false);
             return;
         }
@@ -68,29 +68,30 @@ export default function Register() {
                 throw authError;
             }
 
-            // 2. Opcional: Inserir informações adicionais na tabela profiles
-            // (Assumindo que você criou a tabela profiles como mencionado anteriormente)
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .upsert({
-                    id: authData.user.id,
-                    email: formData.email,
-                    first_name: formData.firstName,
-                    last_name: formData.lastName,
-                    full_name: `${formData.firstName} ${formData.lastName}`,
-                    updated_at: new Date().toISOString()
-                });
+            if (authData?.user?.id) {
+                // 2. Opcional: Inserir informações adicionais na tabela profiles
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: authData.user.id,
+                        email: formData.email,
+                        first_name: formData.firstName,
+                        last_name: formData.lastName,
+                        full_name: `${formData.firstName} ${formData.lastName}`,
+                        updated_at: new Date().toISOString()
+                    });
 
-            if (profileError) {
-                console.error("Erro ao criar perfil:", profileError);
-                // Não lançamos erro aqui pois o usuário já foi criado no auth
+                if (profileError) {
+                    console.error("Erro ao criar perfil:", profileError);
+                    // Não lançamos erro aqui pois o usuário já foi criado no auth
+                }
             }
 
             // Redirecionar para página de verificação de e-mail
             router.push('/verify-email?email=' + encodeURIComponent(formData.email));
 
-        } catch (error) {
-            setError(error.message || "Erro ao criar conta");
+        } catch (err) {
+            setError((err as Error).message || "Erro ao criar conta");
         } finally {
             setLoading(false);
         }
@@ -176,8 +177,8 @@ export default function Register() {
                                         <Checkbox
                                             id="terms"
                                             checked={formData.terms}
-                                            onCheckedChange={(checked) =>
-                                                setFormData(prev => ({ ...prev, terms: checked }))
+                                            onCheckedChange={(checked: CheckedState) =>
+                                                setFormData(prev => ({ ...prev, terms: checked === true }))
                                             }
                                             required
                                         />

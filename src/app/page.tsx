@@ -1,18 +1,19 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import Footer from "@/components/Footer";
+import Layout from "@/components/layout/Layout";
+import Hero from "@/components/home/Hero";
+import Features from "@/components/home/Features";
+import Stats from "@/components/home/Stats";
+import Testimonials from "@/components/home/Testimonials";
+import CTA from "@/components/home/CTA";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        <Hero />
-        <Features />
-      </main>
-      <Footer />
-    </div>
+    <Layout>
+      <Hero />
+      <Stats />
+      <Features />
+      <Testimonials />
+      <CTA />
+    </Layout>
   );
 };
 

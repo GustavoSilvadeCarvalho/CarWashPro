@@ -1,6 +1,6 @@
 'use client';
-import React from "react";
 
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -32,21 +32,20 @@ export default function Hero() {
                             </Link>
                         </div>
                     </div>
-                    <div className="w-full lg:w-1/2">
-                        <div className="relative rounded-xl overflow-hidden shadow-2xl">
-                            <div className="bg-gradient-to-r from-[#9b87f5] to-[#D3E4FD] aspect-[16/9] rounded-xl flex items-center justify-center">
-                                <Image
-                                    src="/carwash.avif"
-                                    alt="Carro sendo lavado"
-                                    className="w-full h-full object-cover mix-blend-overlay opacity-90"
-                                    width={800}
-                                    height={450}
-                                />
-                            </div>
+
+                    <div className="relative rounded-xl overflow-hidden shadow-2xl">
+                        <div className="bg-gradient-to-r from-[#9b87f5] to-[#D3E4FD] aspect-[16/9] rounded-xl flex items-center justify-center">
+                            <Image
+                                src="/carwash.avif"
+                                alt="Carro sendo lavado"
+                                className="w-full h-full object-cover mix-blend-overlay opacity-90"
+                                width={800}
+                                height={450}
+                            />
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     );
-};
+} 

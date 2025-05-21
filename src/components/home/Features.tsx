@@ -1,3 +1,5 @@
+'use client';
+
 import { Car, List, ShoppingCart } from "lucide-react";
 
 export default function Features() {
@@ -52,4 +54,4 @@ export default function Features() {
             </div>
         </section>
     );
-};
+} 

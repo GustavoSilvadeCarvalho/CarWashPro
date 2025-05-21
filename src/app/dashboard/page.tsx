@@ -9,9 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Car, Home, LogOut, Plus, ShoppingCart, Play, CheckCircle, ArrowRight, Trash2, Pencil, Loader2 } from "lucide-react";
-import CarCard from "@/components/CarCard";
-import AddCarModal from "@/components/AddCarModal";
-import AddProductModal from "@/components/AddProductModal";
+import CarCard from "@/components/cars/CarCard";
+import AddCarModal from "@/components/cars/AddCarModal";
+import AddProductModal from "@/components/products/AddProductModal";
 import { Toaster, toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
